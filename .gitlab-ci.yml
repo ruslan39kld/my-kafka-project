@@ -1,0 +1,31 @@
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t kafka-demo-app:$CI_COMMIT_SHORT_SHA .
+  only:
+    - master
+
+test:
+  stage: test
+  image: python:3.10.2
+  script:
+    - pip install --no-cache-dir -r requirements.txt
+    - python app/main.py
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  image: docker:latest
+  script:
+    - echo "Здесь можно добавить команды для деплоя в тестовое/продакшн окружение"
+  only:
+    - master
