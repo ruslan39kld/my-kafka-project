@@ -1,19 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafka-demo-app
+  name: kafka-demo-service   # Изменено название - Руслан39КЛД
+  namespace:
+    default
+  labels:
+    app: kafka-demo-service  # Соответствующее изменение в labels
+    environment: development # Добавлен environment label - Руслан39КЛД
+    version: "1.0.1"         # Добавлена версия - Руслан39КЛД
 spec:
-  replicas: 1
+  replicas: 2  # Увеличено количество реплик для надежности - Руслан39КЛД
   selector:
     matchLabels:
-      app: kafka-demo-app
+      app: kafka-demo-service
+  strategy:
+    type: RollingUpdate      # Добавлена стратегия обновления - Руслан39КЛД
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
-        app: kafka-demo-app
+        app: kafka-demo-service
     spec:
       containers:
-      - name: kafka-demo-app
+      - name: kafka-demo-service
         image: kafka-demo-app:latest
+        imagePullPolicy: Always  # Добавлена политика получения образа - Руслан39КЛД
         ports:
         - containerPort: 80
+        resources:               # Добавлены ограничения ресурсов - Руслан39КЛД
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+        livenessProbe:           # Добавлен проверка работоспособности - Руслан39КЛД
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
