@@ -1,24 +1,41 @@
 version: '3'
 services:
+  # Конфигурация ZooKeeper - координационный сервис для Kafka
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
+    container_name: zookeeper-service  # Переименовано - Руслан39КЛД
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      # Добавлены параметры для повышения стабильности - Руслан39КЛД
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
     ports:
       - "2181:2181"
+    # Добавлено управление здоровьем контейнера - Руслан39КЛД
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
+  # Конфигурация брокера Kafka
   kafka:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka
+    container_name: kafka-broker  # Переименовано - Руслан39КЛД
     depends_on:
       - zookeeper
     ports:
       - "9092:9092"
+      # Добавлен порт для инструментов мониторинга - Руслан39КЛД
+      - "9999:9999"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # Добавленные параметры для улучшения производительности - Руслан39КЛД
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_JMX_PORT: 9999
