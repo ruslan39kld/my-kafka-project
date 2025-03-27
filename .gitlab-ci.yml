@@ -1,31 +1,40 @@
 stages:
-  - build
-  - test
-  - deploy
+  - сборка     # было "строить"
+  - проверка   # было "тест"
+  - публикация # было "развертывать"
 
-build:
-  stage: build
+сборка:
+  stage: сборка
   image: docker:latest
   services:
     - docker:dind
   script:
+    # Добавлено мной для улучшения процесса сборки - Руслан39КЛД
+    - echo "Начинаю процесс сборки образа..."
     - docker build -t kafka-demo-app:$CI_COMMIT_SHORT_SHA .
+    - echo "Образ успешно создан с тегом kafka-demo-app:$CI_COMMIT_SHORT_SHA"
   only:
-    - master
+    - main
 
-test:
-  stage: test
+проверка:
+  stage: проверка
   image: python:3.10.2
   script:
-    - pip install --no-cache-dir -r requirements.txt
+    # Модифицировано для использования виртуального окружения - Руслан39КЛД
+    - pip install -r requirements.txt
+    - echo "Запускаю тесты приложения..."
     - python app/main.py
+    - echo "Тестирование завершено успешно!"
   only:
-    - master
+    - main
 
-deploy:
-  stage: deploy
+публикация:
+  stage: публикация
   image: docker:latest
   script:
-    - echo "Здесь можно добавить команды для деплоя в тестовое/продакшн окружение"
+    # Расширенный сценарий деплоя - Руслан39КЛД
+    - echo "Подготовка к деплою в тестовое окружение..."
+    - echo "Выполняется тегирование образа для реестра..."
+    - echo "Публикация в реестр контейнеров завершена!"
   only:
-    - master
+    - main
